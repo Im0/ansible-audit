@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <title>Audit fruit salad results</title>
+  <meta name="description" content="{{ description }}" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    .redwarning { color: red; }
+	.glyphicon:before { margin-left: 5px; }
+  </style>
+
+</head>
+
+<body>
+
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">{{ meta.audit_name }} audit - Fruit Salad</a>
+      </div>
+    </div>
+  </nav>
+
+<div class="container">
+    <div id="header" class="jumbotron">                                                                                      <div class="row">                                                                                                        <div class="col-md-8">                                                                                                 <h2>Customer: {{ meta.customer }}</h2>                                                                               <p>Start time: {{ meta.audit_start_time }}</p>                                                                       <p>End time: {{ meta.audit_end_time }}</p>                                                                           <p>Hosts: {{ stats.num_hosts }}</p>                                                                                </div>                                                                                                               <div class="col-md-4">                                                                                                 <h2>Tasks</h2>
+                <p>OK : {{ stats.tasks_ok }} </p>                                                                                    <p>Warning: {{ stats.tasks_warning }}</p>                                                                            <p>Failed: {{ stats.tasks_failed }}</p>                                                                              <p>Skipped: {{ stats.tasks_skipped }}</p>
+             </div>
+        </div>
+    </div>     
+
+	<div id="results">
+		<table class="table">
+		<thead class="thead-default">
+			<tr>
+                <th>Hostname</th>
+                {% for i in meta.tasks %}
+                <th><p data-toggle="tooltip" data-placement="top" animation="false"  title="{{ i }}">{{ i|truncate(24) }}</p></th>
+                {% endfor %}
+			</tr>
+ 		</thead>
+		<tbody>
+		{% for hostname,hostdata in results.items() %}
+			<tr>
+                <td>{{ hostname }}</td>
+                {% for task in hostdata -%}
+                {%- if task.result_status == 'FAILED' -%}
+                <td class="danger">
+                {%- elif task.result_status == 'WARNING' -%}
+                <td class="warning">
+                {%- elif task.result_status == 'SKIPPED' -%}
+                <td class="info">
+                {%- else -%}
+                <td class="success">
+                {%- endif %}
+                    {{ task.result_status }}
+                </td>
+                {% endfor %}
+			</tr>
+		{% endfor %}
+		</tbody>
+		</table>
+      </div>
+</div>
+    <script>
+    $( document ).ready(function() {
+        $('[data-toggle="tooltip"]').tooltip({'placement': 'top'});
+    });
+    </script>
+</body>
+</html>

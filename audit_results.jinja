@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <title>Audit results</title>
+  <meta name="description" content="{{ description }}" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    .redwarning { color: red; }
+	.glyphicon:before { margin-left: 5px; }
+  </style>
+
+</head>
+
+<body>
+
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">{{ meta.audit_name }} audit - Host Results</a>
+      </div>
+    </div>
+  </nav>
+
+<div class="container">
+	<div id="header" class="jumbotron">
+    	<div class="row">
+			<div class="col-md-8">
+			  <h2>Customer: {{ meta.customer }}</h2>
+			  <p>Start time: {{ meta.audit_start_time }}</p>
+			  <p>End time: {{ meta.audit_end_time }}</p>
+			  <p>Hosts: {{ stats.num_hosts }}</p>
+			</div>
+			<div class="col-md-4">
+			  <h2>Tasks</h2>
+				<p>OK : {{ stats.tasks_ok }} </p>
+				<p>Warning: {{ stats.tasks_warning }}</p>
+				<p>Failed: {{ stats.tasks_failed }}</p>
+				<p>Skipped: {{ stats.tasks_skipped }}</p>
+			 </div>
+		</div>
+	</div>
+
+	<div id="results">
+		<table class="table">
+		<thead class="thead-default">
+			<tr>
+				<th>Hostname</th>
+				<th>Task Name</th>
+				<th>Task Status</th>
+				<th>Task Result</th>
+			</tr>
+ 		</thead>
+		<tbody>
+		{% for hostname,hostdata in results.items() %}
+			<tr>
+                <td>
+                    {% if host_stats[hostname]['FAILED'] > 0 %}
+                    <button type="button" class="btn btn-danger" data-toggle="collapse" data-target=".{{ hostname | replace('.','') }}"> {{ hostname }}<span class="glyphicon glyphicon-chevron-down pull-right"></span></button></td>
+                {% elif host_stats[hostname]['WARNING'] > 0 %}
+                    <button type="button" class="btn btn-warning" data-toggle="collapse" data-target=".{{ hostname | replace('.','') }}"> {{ hostname }}<span class="glyphicon glyphicon-chevron-down pull-right"></span></button></td>
+                {% elif host_stats[hostname]['UNREACHABLE'] > 0 %}
+                    <button type="button" class="btn btn-info" data-toggle="collapse" data-target=".{{ hostname | replace('.','') }}"> {{ hostname }}<span class="glyphicon glyphicon-chevron-down pull-right"></span></button></td>
+                {% else %}
+                    <button type="button" class="btn btn-success" data-toggle="collapse" data-target=".{{ hostname | replace('.','') }}"> {{ hostname }}<span class="glyphicon glyphicon-chevron-down pull-right"></span></button></td>
+                {% endif %}
+                <td>OK: {{ host_stats[hostname]['OK'] }} / WARN: {{ host_stats[hostname]['WARNING'] }} / FAIL: {{ host_stats[hostname]['FAILED'] }}</td>
+			    <td></td>
+			    <td></td>
+			</tr>
+           <div id="{{ hostname | replace('.','') }}" class="collapse out">
+
+		   {% for task in hostdata -%}
+            <tr {% if task.result_status == 'FAILED' -%} 
+                    class="danger collapse {{ hostname | replace('.','') }}" 
+                {%- elif task.result_status == 'WARNING' -%}
+                    class="warning collapse {{ hostname | replace('.','') }}"
+                {%- elif task.result_status == 'SKIPPED' -%}
+                    class="info collapse {{ hostname | replace('.','') }}"
+                {%- else -%} 
+                    class="success collapse {{ hostname | replace('.','') }}" 
+                {%- endif %}>
+			    <td></td>
+			    <td>{{ task.task_name }}</td> 
+                <td>{% if task.result_stderr -%}
+                    <p>
+                        <span class="glyphicon glyphicon-warning-sign redwarning" aria-hidden="true">
+                        <h4>WARNING - Error in transition check:</h4> 
+                        <span>
+                        {{ task.result_stderr }} 
+                     </p>
+                     {%- else -%}
+                        {{ task.result_status }}
+                     {%- endif -%}
+                </td>
+    		    <td>{{ task.result_stdout }} </td>
+		    </tr>
+		   {% endfor %}
+           </div>
+		   
+		{% endfor %}
+		</tbody>
+		</table>
+      </div>
+</div>
+
+</body>
+</html>
