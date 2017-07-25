@@ -41,9 +41,13 @@ Example:
     Same, but, using a non-default location for the audit plugin and templates:
 
         $ AUDIT_NAME='My Systems' CUSTOMER="CUSTOMER" \
-                ANSIBLE_CALLBACK_WHITELIST=audit \
-                ansible-playbook --module-path=./path/to/audit \
-                --ask-sudo-pass site.yml -k
+            ANSIBLE_CALLBACK_WHITELIST=audit ANSIBLE_CONFIG='./audit/ansible.cfg' \
+            ansible-playbook --ask-sudo-pass ansible-audit-playbook-example/site.yml -k
+
+    Where the ./audit/ansible.cfg contains a directive pointing to your callback
+    plugins directory.  You may simply copy the default /etc/ansible/ansible.cfg and
+    modified teh callback_plugins directive to suit my needs.  
+
 
 '''
 
@@ -91,7 +95,8 @@ class CallbackModule(CallbackBase):
 
         self.config = {
             "logFormat": '%(asctime)-15s: %(funcName)s: %(message)s',
-            "working_dir": '/var/log/ansible/audits/'
+            "working_dir": '/var/log/ansible/audits/',
+            "filename_prepend": 'audit'
         }
 
         if not os.path.exists(self.config['working_dir']):
@@ -239,7 +244,7 @@ class CallbackModule(CallbackBase):
     def zip(self):
         """Zip up JSON, html report and fruitsalad files.
         """
-        outFile = 'transition-audit-%s.zip' % (os.getpid())
+        outFile = '%s-%s.zip' % (self.config['filename_prepend'], os.getpid())
         self.meta['zipfile'] = os.path.join(self.config['working_dir'], outFile)
 
         zf = zipfile.ZipFile("%s" % (self.meta['zipfile']), "w", zipfile.ZIP_DEFLATED)
