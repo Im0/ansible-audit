@@ -72,13 +72,20 @@ Example, when the files are stored in a separate modules path:
 
 ```bash
         $ AUDIT_NAME='My Systems' CUSTOMER="CUSTOMER" \
-            ANSIBLE_CALLBACK_WHITELIST=audit \
-            ansible-playbook --module-path=./path/to/audit \
-                             --ask-sudo-pass site.yml -k
+            ANSIBLE_CALLBACK_WHITELIST=audit ANSIBLE_CONFIG='./audit/ansible.cfg' \
+            ansible-playbook --ask-sudo-pass ansible-audit-playbook-example/site.yml -k
+```
+
+Where the ./audit/ansible.cfg contains a directive pointing to your callback
+plugins directory.  I simply copied the default /etc/ansible/ansible.cfg and
+modified teh callback_plugins directive to suit my needs.  For instance:
+
+```
+callback_plugins   = /usr/share/ansible/plugins/callback:./:./audit
 ```
 
 Tested with:
-* ansible 2.3.0.0
+* ansible 2.3.0.0 & 2.3.1.0
 * python version = 2.7.12 
 
 
@@ -119,6 +126,7 @@ We don't want ansible saying the result of the task is changed.
   changed_when: false
 ```
 
+For a complete example, check out: https://github.com/Im0/ansible-audit-playbook-example
 
 ## Output
 
