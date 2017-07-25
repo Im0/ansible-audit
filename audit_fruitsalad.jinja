@@ -32,8 +32,20 @@
   </nav>
 
 <div class="container">
-    <div id="header" class="jumbotron">                                                                                      <div class="row">                                                                                                        <div class="col-md-8">                                                                                                 <h2>Customer: {{ meta.customer }}</h2>                                                                               <p>Start time: {{ meta.audit_start_time }}</p>                                                                       <p>End time: {{ meta.audit_end_time }}</p>                                                                           <p>Hosts: {{ stats.num_hosts }}</p>                                                                                </div>                                                                                                               <div class="col-md-4">                                                                                                 <h2>Tasks</h2>
-                <p>OK : {{ stats.tasks_ok }} </p>                                                                                    <p>Warning: {{ stats.tasks_warning }}</p>                                                                            <p>Failed: {{ stats.tasks_failed }}</p>                                                                              <p>Skipped: {{ stats.tasks_skipped }}</p>
+    <div id="header" class="jumbotron">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>Customer: {{ meta.customer }}</h2>
+                <p>Start time: {{ meta.audit_start_time }}</p>
+                <p>End time: {{ meta.audit_end_time }}</p>
+                <p>Hosts: {{ stats.num_hosts }}</p>
+            </div>
+            <div class="col-md-4">
+                <h2>Tasks</h2>
+                <p>OK : {{ stats.tasks_ok }} </p>
+                <p>Warning: {{ stats.tasks_warning }}</p>
+                <p>Failed: {{ stats.tasks_failed }}</p>
+                <p>Skipped: {{ stats.tasks_skipped }}</p>
              </div>
         </div>
     </div>     
@@ -53,7 +65,7 @@
 			<tr>
                 <td>{{ hostname }}</td>
                 {% for task in hostdata -%}
-                {%- if task.result_status == 'FAILED' -%}
+                {%- if task.result_status == 'FAILED' or task.result_status == 'UNREACHABLE' -%}
                 <td class="danger">
                 {%- elif task.result_status == 'WARNING' -%}
                 <td class="warning">

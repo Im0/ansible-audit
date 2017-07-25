@@ -69,7 +69,7 @@
                 {% elif host_stats[hostname]['WARNING'] > 0 %}
                     <button type="button" class="btn btn-warning" data-toggle="collapse" data-target=".{{ hostname | replace('.','') }}"> {{ hostname }}<span class="glyphicon glyphicon-chevron-down pull-right"></span></button></td>
                 {% elif host_stats[hostname]['UNREACHABLE'] > 0 %}
-                    <button type="button" class="btn btn-info" data-toggle="collapse" data-target=".{{ hostname | replace('.','') }}"> {{ hostname }}<span class="glyphicon glyphicon-chevron-down pull-right"></span></button></td>
+                    <button type="button" class="btn btn-danger" data-toggle="collapse" data-target=".{{ hostname | replace('.','') }}"> {{ hostname }}<span class="glyphicon glyphicon-chevron-down pull-right"></span></button></td>
                 {% else %}
                     <button type="button" class="btn btn-success" data-toggle="collapse" data-target=".{{ hostname | replace('.','') }}"> {{ hostname }}<span class="glyphicon glyphicon-chevron-down pull-right"></span></button></td>
                 {% endif %}
@@ -81,6 +81,8 @@
 
 		   {% for task in hostdata -%}
             <tr {% if task.result_status == 'FAILED' -%} 
+                    class="danger collapse {{ hostname | replace('.','') }}" 
+                {%- elif task.result_status == 'UNREACHABLE' -%}
                     class="danger collapse {{ hostname | replace('.','') }}" 
                 {%- elif task.result_status == 'WARNING' -%}
                     class="warning collapse {{ hostname | replace('.','') }}"
