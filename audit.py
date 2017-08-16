@@ -90,13 +90,16 @@ class CallbackModule(CallbackBase):
         Args:
             AUDIT_NAME (str): This is the name of the audit we are carrying out
             CUSTOMER (str): Customer name, if, auditing a customer environment
+            OUTPUT_DIR (str): Adjust the default zip output path
+            DISPLAY_PATH (str): If 'TRUE' display the full path to the zip file produced
         """
         super(CallbackModule, self).__init__()
 
         self.config = {
             "logFormat": '%(asctime)-15s: %(funcName)s: %(message)s',
-            "working_dir": '/var/log/ansible/audits/',
-            "filename_prepend": 'audit'
+            "working_dir": os.getenv('OUTPUT_DIR', '/var/log/ansible/audits/'),
+            "filename_prepend": 'audit',
+            "display_path": os.getenv('DISPLAY_PATH', '')
         }
 
         if not os.path.exists(self.config['working_dir']):
@@ -156,24 +159,24 @@ class CallbackModule(CallbackBase):
         Args:
             host (str): The hostname of the system the result is for
             status (str): The status of the task for this host
-            data (dict): TODO: Are we using this?  Tidy up?
+            data (dict): Ansible data
 
         Returns:
             dict: Returns a dict containing, task_name, play_name, stdout,
                 stderr and the status.
         """
-	stderr = ''
+	    stderr = ''
         stdout = ''
 
         logging.debug('%s (%s) - %s', host, status, data)
-	if isinstance(data, dict):
+	    if isinstance(data, dict):
             # If there is information in stderr we can assume the command
             # did not execute correctly and should WARN and remove OK count.
-	    if 'stderr' in data.keys():
-            	stderr = data['stderr']
+            if 'stderr' in data.keys():
+                stderr = data['stderr']
                 # If there is output in standard error output, the status is
-                # NOT OK.  We need to WARN instead.
-                if len(data['stderr']) >= 2 and status == 'OK':
+                 # NOT OK.  We need to WARN instead.
+                 if len(data['stderr']) >= 2 and status == 'OK':
                     status = 'WARNING'
                     self.stats['tasks_warning'] += 1
                     self.stats['tasks_ok'] -= 1
@@ -212,7 +215,7 @@ class CallbackModule(CallbackBase):
         template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      'audit_results.jinja')
 
-	with open(self.meta['json_file']) as data_file:
+	    with open(self.meta['json_file']) as data_file:
             data = json.load(data_file)
 
         result = self.render(template_path, data)
@@ -253,6 +256,8 @@ class CallbackModule(CallbackBase):
         zf.write(self.meta['html_fruitsalad'], os.path.basename(self.meta['html_fruitsalad']))
         zf.close()
         logging.info('Zip file location: %s', self.meta['zipfile'])
+        if self.config['display_path'] == 'TRUE':
+            logging.critical('Zip file location: %s', self.meta['zipfile']) 
 
     def tidyup(self):
         """Tidy up JSON, html report and fruit salad files

@@ -55,6 +55,22 @@ You might consider using this callback plugin if:
 First, either copy the following files to your ansible callback plugins
 directory.  audit.py, audit_fruitsalad.jinja and audit_results.jinja.
 
+### External variables
+
+A number of variables can be passed through to the audit plugin modifying
+configuration or providing content to the jinja templates.
+
+* AUDIT_NAME - The name of the audit. If left blank, defaults to 'No audit name specified'
+* CUSTOMER - A customer name.  If left blank, defaults to 'No customer specified'
+* OUTPUT_DIR - Where to output the zip file containing the JSON and HTML files.
+* DISPLAY_PATH - If 'TRUE', display path to zip file on finish.  Default is not to display.
+
+Ansible specific:
+* ANSIBLE_CALLBACK_WHITELIST - Instructs ansible to use the custom
+  plugin.
+
+### Examples
+
 Example when files are in the ansible module directory:
     To use this plugin in conjunction with your playbook, below are some
     options on how to run::
@@ -62,23 +78,26 @@ Example when files are in the ansible module directory:
 ```bash
         $ AUDIT_NAME='My Systems' CUSTOMER="CUSTOMER" \
             ANSIBLE_CALLBACK_WHITELIST=audit \
+            DISPLAY_PATH=TRUE \
             ansible-playbook --ask-sudo-pass site.yml -k
 ```
 
 This will audit the systems referenced in your site.yml playbook and output
-a zip file into the self.config['working_dir'].
+a zip file into the self.config['working_dir'], and, print out the path to
+the zip file.
 
 Example, when the files are stored in a separate modules path:
 
 ```bash
         $ AUDIT_NAME='My Systems' CUSTOMER="CUSTOMER" \
             ANSIBLE_CALLBACK_WHITELIST=audit ANSIBLE_CONFIG='./audit/ansible.cfg' \
+            OUTPUT_DIR=/tmp/audit/ DISPLAY_PATH=TRUE \
             ansible-playbook --ask-sudo-pass ansible-audit-playbook-example/site.yml -k
 ```
 
 Where the ./audit/ansible.cfg contains a directive pointing to your callback
 plugins directory.  I simply copied the default /etc/ansible/ansible.cfg and
-modified teh callback_plugins directive to suit my needs.  For instance:
+modified the callback_plugins directive to suit my needs.  For instance:
 
 ```
 callback_plugins   = /usr/share/ansible/plugins/callback:./:./audit
@@ -133,6 +152,9 @@ For a complete example, check out: https://github.com/Im0/ansible-audit-playbook
 The plugin will produce a zipfile within the configured directory defined in
 self.config['working_dir'].  The zip file contains a JSON file and two HTML
 files.  
+
+'working_dir' can be overwritten by specifying the external variable OUTPUT_DIR.
+ie.  OUTPUT_DIR=/tmp/ansible
 
 Alter the jinja templates if you wish to adjust the look and feel of the HTML
 output.
