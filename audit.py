@@ -78,6 +78,7 @@ class CallbackModule(CallbackBase):
     CALLBACK_NAME = 'audit'
     CALLBACK_NEEDS_WHITELIST = True
     ''' Valid options for debugging:  'DEBUG'|'INFO'|False '''
+    #DEBUG = 'DEBUG'
     DEBUG = False
 
     TIME_FORMAT = "%b %d %Y %H:%M:%S"
@@ -165,37 +166,37 @@ class CallbackModule(CallbackBase):
             dict: Returns a dict containing, task_name, play_name, stdout,
                 stderr and the status.
         """
-	    stderr = ''
+        stderr = ''
         stdout = ''
 
         logging.debug('%s (%s) - %s', host, status, data)
-	    if isinstance(data, dict):
+	if isinstance(data, dict):
             # If there is information in stderr we can assume the command
             # did not execute correctly and should WARN and remove OK count.
             if 'stderr' in data.keys():
                 stderr = data['stderr']
                 # If there is output in standard error output, the status is
-                 # NOT OK.  We need to WARN instead.
-                 if len(data['stderr']) >= 2 and status == 'OK':
+                # NOT OK.  We need to WARN instead.
+                if len(data['stderr']) >= 2 and status == 'OK':
                     status = 'WARNING'
                     self.stats['tasks_warning'] += 1
                     self.stats['tasks_ok'] -= 1
             else:
                 stderr = ''
 
-            if 'stdout' in data.keys():
-                stdout = data['stdout']
-                if stdout.startswith('WARNING') and status == 'FAILED':
-                    status = 'WARNING'
-                    self.stats['tasks_warning'] += 1
-                    self.stats['tasks_failed'] -= 1
-                elif stdout.startswith('WARNING') and status == 'OK':
-                    status = 'WARNING'
-                    self.stats['tasks_warning'] += 1
-                    self.stats['tasks_ok'] -= 1
+        if 'stdout' in data.keys():
+            stdout = data['stdout']
+            if stdout.startswith('WARNING') and status == 'FAILED':
+                status = 'WARNING'
+                self.stats['tasks_warning'] += 1
+                self.stats['tasks_failed'] -= 1
+            elif stdout.startswith('WARNING') and status == 'OK':
+                status = 'WARNING'
+                self.stats['tasks_warning'] += 1
+                self.stats['tasks_ok'] -= 1
 
-            else:
-                stderr = ''
+        else:
+            stderr = ''
 
         return {
             'task_name': str(self.task),
@@ -215,7 +216,7 @@ class CallbackModule(CallbackBase):
         template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      'audit_results.jinja')
 
-	    with open(self.meta['json_file']) as data_file:
+        with open(self.meta['json_file']) as data_file:
             data = json.load(data_file)
 
         result = self.render(template_path, data)
