@@ -100,6 +100,8 @@ plugins directory.  I simply copied the default /etc/ansible/ansible.cfg and
 modified the callback_plugins directive to suit my needs.  For instance:
 
 ```
+[defaults]
+
 callback_plugins   = /usr/share/ansible/plugins/callback:./:./audit
 ```
 
