@@ -168,6 +168,7 @@ class CallbackModule(CallbackBase):
         """
         stderr = ''
         stdout = ''
+        msg = ''
 
         logging.debug('%s (%s) - %s', host, status, data)
 	if isinstance(data, dict):
@@ -194,14 +195,27 @@ class CallbackModule(CallbackBase):
                 status = 'WARNING'
                 self.stats['tasks_warning'] += 1
                 self.stats['tasks_ok'] -= 1
-
         else:
-            stderr = ''
+            stdout = ''
+
+        if 'msg' in data.keys():
+            msg = data['msg']
+            if msg.startswith('WARNING') and status == 'FAILED':
+                status = 'WARNING'
+                self.stats['tasks_warning'] += 1
+                self.stats['tasks_failed'] -= 1
+            elif msg.startswith('WARNING') and status == 'OK':
+                status = 'WARNING'
+                self.stats['tasks_warning'] += 1
+                self.stats['tasks_ok'] -= 1
+        else:
+            msg = ''
+
 
         return {
             'task_name': str(self.task),
             'play_name': str(self.play),
-            'result_stdout': stdout,
+            'result_stdout': stdout + msg,
             'result_stderr': stderr,
             'result_status': status
         }
