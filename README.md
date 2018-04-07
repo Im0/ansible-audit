@@ -53,7 +53,11 @@ You might consider using this callback plugin if:
 ## Usage
 
 First, either copy the following files to your ansible callback plugins
-directory.  audit.py, audit_fruitsalad.jinja and audit_results.jinja.
+directory.  `audit.py`, `audit_fruitsalad.jinja` and `audit_results.jinja`.
+
+Or, easier still, create a `callback_plugins` directory in the same
+directory as your playbook and copy the above files into this new
+directory. 
 
 ### External variables
 
@@ -67,7 +71,7 @@ configuration or providing content to the jinja templates.
 
 Ansible specific:
 * ANSIBLE_CALLBACK_WHITELIST - Instructs ansible to use the custom
-  plugin.
+  plugin. **Note:** This requirement has been removed.
 
 ### Examples
 
@@ -77,7 +81,6 @@ Example when files are in the ansible module directory:
 
 ```bash
         $ AUDIT_NAME='My Systems' CUSTOMER="CUSTOMER" \
-            ANSIBLE_CALLBACK_WHITELIST=audit \
             DISPLAY_PATH=TRUE \
             ansible-playbook --ask-sudo-pass site.yml -k
 ```
@@ -90,7 +93,7 @@ Example, when the files are stored in a separate modules path:
 
 ```bash
         $ AUDIT_NAME='My Systems' CUSTOMER="CUSTOMER" \
-            ANSIBLE_CALLBACK_WHITELIST=audit ANSIBLE_CONFIG='./audit/ansible.cfg' \
+            ANSIBLE_CONFIG='./audit/ansible.cfg' \
             OUTPUT_DIR=/tmp/audit/ DISPLAY_PATH=TRUE \
             ansible-playbook --ask-sudo-pass ansible-audit-playbook-example/site.yml -k
 ```
@@ -106,15 +109,15 @@ callback_plugins   = /usr/share/ansible/plugins/callback:./:./audit
 ```
 
 Tested with:
-* ansible 2.3.0.0 & 2.3.1.0
+* ansible 2.3.0.0, 2.3.1.0, 2.4.3 & 2.5.0
 * python version = 2.7.12 
 
 
 ## Playbook example
 
-'ignore_errors: yes' is required as we don't want ansible stopping on failure.
+`ignore_errors: yes` is required as we don't want ansible stopping on failure.
 
-'changed_when: false' is required as the commands/shell should NOT change any state.
+`changed_when: false` is required as the commands/shell should NOT change any state.
 We don't want ansible saying the result of the task is changed.
 
 ```
@@ -145,6 +148,11 @@ We don't want ansible saying the result of the task is changed.
     executable: /bin/bash
   ignore_errors: yes
   changed_when: false
+
+- name: _Don't report on this task
+  debug:
+    msg: "Tasks that have no name, or, name prepended with _ won't be displayed in the results"
+
 ```
 
 For a complete example, check out: https://github.com/Im0/ansible-audit-playbook-example
@@ -155,7 +163,7 @@ The plugin will produce a zipfile within the configured directory defined in
 self.config['working_dir'].  The zip file contains a JSON file and two HTML
 files.  
 
-'working_dir' can be overwritten by specifying the external variable OUTPUT_DIR.
+`working_dir` can be overwritten by specifying the external variable OUTPUT_DIR.
 ie.  OUTPUT_DIR=/tmp/ansible
 
 Alter the jinja templates if you wish to adjust the look and feel of the HTML

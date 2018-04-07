@@ -76,7 +76,7 @@ class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.0
     CALLBACK_TYPE = 'notification'
     CALLBACK_NAME = 'audit'
-    CALLBACK_NEEDS_WHITELIST = True
+    CALLBACK_NEEDS_WHITELIST = False
     ''' Valid options for debugging:  'DEBUG'|'INFO'|False '''
     #DEBUG = 'DEBUG'
     DEBUG = False
@@ -169,6 +169,10 @@ class CallbackModule(CallbackBase):
         stderr = ''
         stdout = ''
         msg = ''
+
+        # Ignore un-named tasks or task names that are pre-pended with _
+        if ((str(self.task).startswith('_')) or (self.task == "")):
+            return None
 
         logging.debug('%s (%s) - %s', host, status, data)
 	if isinstance(data, dict):
@@ -355,9 +359,12 @@ class CallbackModule(CallbackBase):
         this to increment our statistics dictionary.
         """
         test = self.results.setdefault(str(host), [])
-        test.append(self._new_result(str(host), 'FAILED', data))
-        self.stats['tasks_failed'] += 1
-        self.stats['num_tasks'] += 1
+        new_result = self._new_result(str(host), 'FAILED', data)
+
+        if new_result is not None:
+            test.append(new_result)
+            self.stats['tasks_failed'] += 1
+            self.stats['num_tasks'] += 1
 
 
     def runner_on_ok(self, host, data):
@@ -367,24 +374,33 @@ class CallbackModule(CallbackBase):
         this to increment our statistics dictionary.
         """
         test = self.results.setdefault(str(host), [])
-        test.append(self._new_result(str(host), 'OK', data))
-        self.stats['tasks_ok'] += 1
-        self.stats['num_tasks'] += 1
+        new_result = self._new_result(str(host), 'OK', data)
+
+        if new_result is not None:
+            test.append(new_result)
+            self.stats['tasks_ok'] += 1
+            self.stats['num_tasks'] += 1
 
 
     def runner_on_skipped(self, host, item=None):
         # ERROR/SKIPPED here needs capturing and handling properly.  skipped desn't resturn res
         # to pass onto _new_result.
         test = self.results.setdefault(str(host), [])
-        test.append(self._new_result(str(host), 'SKIPPED', {}))
-        self.stats['tasks_skipped'] += 1
-        self.stats['num_tasks'] += 1
+        new_result = self._new_result(str(host), 'SKIPPED', {})
+
+        if new_result is not None:
+            test.append(new_result)
+            self.stats['tasks_skipped'] += 1
+            self.stats['num_tasks'] += 1
 
 
     def runner_on_unreachable(self, host, data):
         test = self.results.setdefault(str(host), [])
-        test.append(self._new_result(str(host), 'UNREACHABLE', data))
-        self.stats['hosts_failed'] += 1
+        new_result = self._new_result(str(host), 'UNREACHABLE', data)
+
+        if new_result is not None:
+            test.append(new_result)
+            self.stats['hosts_failed'] += 1
 
 
     def playbook_on_stats(self, stats):
@@ -407,5 +423,8 @@ class CallbackModule(CallbackBase):
         self.play = play
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        self.meta['tasks'].append(str(task.name))
+        # Ignore un-named tasks or task names that are pre-pended with _
+        if not ((str(task.name).startswith('_')) or (task.name == "")):
+            self.meta['tasks'].append(str(task.name))
+
         self.task = task.name
