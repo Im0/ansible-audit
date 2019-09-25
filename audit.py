@@ -46,7 +46,7 @@ Example:
 
     Where the ./audit/ansible.cfg contains a directive pointing to your callback
     plugins directory.  You may simply copy the default /etc/ansible/ansible.cfg and
-    modified teh callback_plugins directive to suit my needs.  
+    modified the callback_plugins directive to suit my needs.  
 
 
 '''
@@ -98,9 +98,9 @@ class CallbackModule(CallbackBase):
 
         self.config = {
             "logFormat": '%(asctime)-15s: %(funcName)s: %(message)s',
-            "working_dir": os.getenv('OUTPUT_DIR', '/var/log/ansible/audits/'),
+            "working_dir": os.getenv('OUTPUT_DIR', '/tmp/'),
             "filename_prepend": 'audit',
-            "display_path": os.getenv('DISPLAY_PATH', '')
+            "display_path": os.getenv('DISPLAY_PATH', 'TRUE')
         }
 
         if not os.path.exists(self.config['working_dir']):
