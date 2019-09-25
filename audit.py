@@ -175,7 +175,7 @@ class CallbackModule(CallbackBase):
             return None
 
         logging.debug('%s (%s) - %s', host, status, data)
-	if isinstance(data, dict):
+        if isinstance(data, dict):
             # If there is information in stderr we can assume the command
             # did not execute correctly and should WARN and remove OK count.
             if 'stderr' in data.keys():
