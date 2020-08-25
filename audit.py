@@ -190,7 +190,7 @@ class CallbackModule(CallbackBase):
                 stderr = ''
 
         if 'stdout' in data.keys():
-            stdout = data['stdout'][0]
+            stdout = data['stdout']
             if stdout.startswith('WARNING') and status == 'FAILED':
                 status = 'WARNING'
                 self.stats['tasks_warning'] += 1
