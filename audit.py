@@ -199,6 +199,8 @@ class CallbackModule(CallbackBase):
                 status = 'WARNING'
                 self.stats['tasks_warning'] += 1
                 self.stats['tasks_ok'] -= 1
+            else:
+                stdout = ''
         else:
             stdout = ''
 
